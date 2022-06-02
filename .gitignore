@@ -1,0 +1,10 @@
+*~
+*.o
+tmp*
+test.c
+test
+a.out
+dns_ropob
+peda*
+core
+.gdb_history
