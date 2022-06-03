@@ -89,8 +89,23 @@ ret
 * registerの値を変えずにリターンアドレスを設定するには、pushfqを2回行ってreturnアドレス用の領域を作り、適宜操作に必要なregisterの値をpushして保存し、終わり際にmov命令でreturnアドレスの部分だけresolver()のアドレスを入れた状態でpopでregisterの値を復元すると、retを踏んで次のガジェットに移った時にはstackとregisterの値は`original instruction`を実行したときと全く同じになる。
   * 特定の命令が正しく実行できる。rflagsも保存しないと、cmp命令等が正しく機能しない。sub命令ではリターンアドレス用の領域は作れない。
 * 各ガジェットはfuncのシンボルのアドレスとgadgetのnumberとfunctionのnumberをそれぞれ、グローバル変数のbase, gadgetnumber, funcnumberに格納する。
-* resolver()はfuncnumberはfuncnumberとgadgetnumberを使ってfuncgadgetoffsetsから次のガジェットのオフセットを取り出してbaseにプラスし、こうして得られた次のガジェットのアドレスをreturnアドレスに格納する。
-  * funcgadgetoffsetsはガジェットのナンバーの順序に乗っ取って整列していないといけない。(具体的にはfuncgadgetoffsets\[5\]は0から始まるgadgetnumberの5番に相当するガジェット、つまり6個目のoriginal instructionのfunction内オフセットを格納していないといけない)
+* resolver()はfuncnumberはfuncnumberとgadgetnumberを使ってfuncgadgetoffsetsからfunc{funcnumber}gadgettableのアドレスを取り出し、そのテーブルから次のガジェットのオフセットを取り出してbaseにプラスし、こうして得られた次のガジェットのアドレスをreturnアドレスに格納する。
+  * func{funcnumber}gadgettableはガジェットのナンバーの順序に乗っ取って整列していないといけない。(具体的にはfunc0gadgettable\[5\]は0から始まるgadgetnumberの5番に相当するガジェット、つまり6個目のoriginal instructionのfuncnumber=0のfunction内オフセットを格納していないといけない)
+  * resolver()が各funcgadgetoffsetsからfuncgadgettableのアドレスを取り出せるように、main関数の先頭において、mainのoriginal instructionを実行する前にfuncgadgetoffsetsの中をfunctionの数分適宜アドレスを入れて初期化する。
 
+## 自動化の流れ。
 
+**1. functionの数を特定する。**
+* funcgadgetoffsetsに必要なサイズを特定し作成できる。
+* global変数のサイズは基本64bit(.quad)とした
+
+**2. 各functionの命令の数をカウント**
+* 各functionのfuncgadgettableのサイズを特定。
+  * まだこの時点では実際の各命令のオフセットはわからない。
+
+**3.　各functionの命令の機械語長を調べる。**
+* originalの.cから作ったoriginalの.sファイルからexecutableを作り、それに対してobjdump -dした結果をobjファイルとして作成しそこから各機械語長を読みだした。
+  * executableを作る際にはgccにオプション`-masm=intel -fno-asynchronous-unwind-tables -mno-red-zone`を渡した。特に、`-mno-red-zone`がないと、自身の中でサブルーチンを呼ばないルーチンなどで、rspを減算してスタックを伸長させることなく直でrbp-numberで操作をしてしまうことがあり、その場合original instruction後のpush命令がそのローカル変数を書き換えてしまう。
+* objdumpの結果は一部長い機械語の行を折り返してしまったり、各行の先頭のスペースの個数が違ったりするのでパースするには最新の注意を払うこと。
+* JM系P命令だけは、まだ本当の機械語長を知ることはできない。ガジェット化やランダム化をした際に、飛び先のアドレスまでの距離が変化し、アドレッシングが変わってしまう場合が存在するためである。その場合、original instructionそのもののアセンブリの表記は同じでも、機械語長は一致しないことがある。
 
