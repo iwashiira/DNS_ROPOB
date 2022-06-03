@@ -125,7 +125,9 @@ ret
 * labelはoriginal instructionに飛んでいくための目印なので、ガジェットには分離しない。
 
 **7. resolver()を記入**
+
 **8. mainに初期化処理を記入**
+
 **9. 出来上がった.out1.sをコンパイル**
 * JMP系命令の機械語だけが間違えているexecutableが出来上がる。(当然オフセットも間違っている。)
 * JMP系命令の実際の位置は定まったのでこの状態でそのexecutableに対し再度objdumpを適用し、JMP系の命令だけ機械語長をgadgetnumberと共に取得
