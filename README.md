@@ -35,7 +35,7 @@ make
 1. ガジェットからガジェットへの行き来のためには次に到達すべきガジェットのアドレスを知る必要がある。
 2. 特定の命令がちゃんと動く必要がある。push pop leave call jmp cmp ret等
 
-方針
+**方針**
 * functionに番号をふり、その中のガジェットにも番号をふる。
 * JMP系命令 => そのまま実行
 * それ以外 => resolver()を作ってそれに頼る。
@@ -43,13 +43,54 @@ make
     - retを使うので、(工夫すればできるけれど)stack渡しはしない。グローバル変数等を使う。
 * 特定の命令が動くためには、各ガジェットの中の細分化する前の元の命令を実行する際に、stack、rflagsを含めたすべてのレジスタを元の.sでその命令を実行する際の状態と完全に一致させればよい。
 
-## 各ガジェットとresolver()のコードは以下のようにすれば、方針通りに動作をする。
-
-* resolver()
-```
-```
+**各ガジェットとresolver()のコードは以下のようにすれば、方針通りに動作をする。**
 
 * gadget()
+```func.s
+[original instruction]
+pushfq
+pushfq
+push	rax
+lea	rax, func[rip]
+mov	QWORD PTR base[rip], rax
+mov	QWORD PTR gadgetnumber[rip], 0
+mov	QWORD PTR funcnumber[rip], 0
+lea	rax, resolver[rip]
+mov	QWORD PTR [rsp+16], rax
+pop	rax
+popfq
+ret
 ```
+
+* resolver()
+```resolver.s
+pushfq
+pushfq
+push	rax
+push	rcx
+push	rdx
+mov	rax, QWORD PTR funcnumber[rip]
+lea	rcx, funcgadgetoffsets[rip]
+mov	rdx, QWORD PTR [rcx+rax*8]
+mov	rax, rdx
+mov	rcx, QWORD PTR gadgetnumber[rip]
+add	rcx, 1
+mov	rdx, QWORD PTR [rax+rcx*8]
+mov	rax, QWORD PTR base[rip]
+add	rax, rdx
+mov	QWORD PTR [rsp+32], rax
+pop	rdx
+pop	rcx
+pop	rax
+popfq
+ret
 ```
+
+* registerの値を変えずにリターンアドレスを設定するには、pushfqを2回行ってreturnアドレス用の領域を作り、適宜操作に必要なregisterの値をpushして保存し、終わり際にmov命令でreturnアドレスの部分だけresolver()のアドレスを入れた状態でpopでregisterの値を復元すると、retを踏んで次のガジェットに移った時にはstackとregisterの値は`original instruction`を実行したときと全く同じになる。
+  * 特定の命令が正しく実行できる。rflagsも保存しないと、cmp命令等が正しく機能しない。sub命令ではリターンアドレス用の領域は作れない。
+* 各ガジェットはfuncのシンボルのアドレスとgadgetのnumberとfunctionのnumberをそれぞれ、グローバル変数のbase, gadgetnumber, funcnumberに格納する。
+* resolver()はfuncnumberはfuncnumberとgadgetnumberを使ってfuncgadgetoffsetsから次のガジェットのオフセットを取り出してbaseにプラスし、こうして得られた次のガジェットのアドレスをreturnアドレスに格納する。
+  * funcgadgetoffsetsはガジェットのナンバーの順序に乗っ取って整列していないといけない。(具体的にはfuncgadgetoffsets\[5\]は0から始まるgadgetnumberの5番に相当するガジェット、つまり6個目のoriginal instructionのfunction内オフセットを格納していないといけない)
+
+
 
