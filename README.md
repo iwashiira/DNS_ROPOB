@@ -29,3 +29,15 @@ via Return Oriented Programming](https://mudongliang.github.io/files/papers/ropo
 make
 ./dns_ropob_generator hogehoge.c
 ```
+# 以下細かい説明
+
+## ガジェットからガジェットへの遷移の実現のための課題。
+1. ガジェットからガジェットへの行き来のためには次に到達すべきガジェットのアドレスを知る必要がある。
+2. 特定の命令がちゃんと動く必要がある。push pop leave call jmp cmp ret等
+
+方針
+* functionに番号をふり、その中のガジェットにも番号をふる。
+* JMP系命令 => そのまま実行
+* それ以外 => resolver()を作ってそれに頼る。
+  * resolver()を作るメリットとしては、ガジェットはresolver()にretして移動するだけでよく、resolver()はガジェットのオフセットテーブルを適切に作ることができれば、それを見て次のガジェットに簡単にretできる。つまり、ガジェット自身の中で次のガジェットへと移動するための複雑な機構を設ける必要はなく、最低限のfunctionの番号とその中のガジェット自身の番号さえresolverに渡せれば良い。今回はそれに加えfunctionのbaseアドレスも渡すようにした。
+    - retを使うので、(工夫すればできるけれど)stack渡しはしない。グローバル変数等を使う。
