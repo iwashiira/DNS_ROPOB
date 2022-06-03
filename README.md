@@ -106,7 +106,7 @@ ret
 * 各functionのfuncgadgettableのサイズを特定。
   * まだこの時点では実際の各命令のオフセットはわからない。
 
-**3.　各functionの命令の機械語長を調べる。**
+**3.　各functionの各命令の機械語長を調べる。**
 * originalの.cから作ったoriginalの.sファイルからexecutableを作り、それに対してobjdump -dした結果をobjファイルとして作成しそこから各機械語長を読みだした。
   * executableを作る際にはgccにオプション`-masm=intel -fno-asynchronous-unwind-tables -mno-red-zone`を渡した。特に、`-mno-red-zone`がないと、自身の中でサブルーチンを呼ばないルーチンなどで、rspを減算してスタックを伸長させることなく直でrbp-numberで操作をしてしまうことがあり、その場合original instruction後のpush命令がそのローカル変数を書き換えてしまう。
 * objdumpの結果は一部長い機械語の行を折り返してしまったり、各行の先頭のスペースの個数が違ったりするのでパースするには最新の注意を払うこと。
