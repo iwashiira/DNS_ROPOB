@@ -114,7 +114,7 @@ ret
 
 **4. function内で各命令の順番をランダム化する。**
 * ガジェット配列にランダム化後のgadgetnumberの順序を格納する。
-* 元の命令の順番通りに実行する必要はあるのでgadgetnumberは変化しない。
+* 元の命令の順番通りに実行する必要はあるのでoriginal instructionとgadgetnumberの組み合わせは変化しない。
 
 **5. function内の各命令のオフセットを計算する。**
 * ガジェット化した後のオフセットを計算する。
@@ -122,7 +122,7 @@ ret
 - 得られたオフセットをgadgetnumber順にfuncgadgettableとしてout1.sというアセンブリファイルに追加
 
 **6. gadgetを実際に作成し、記入していく**
-* labelはoriginal instructionに飛んでいくための目印なので、ガジェットには分離しない。
+* Labelはoriginal instructionに飛んでいくための目印なので、ガジェットには分離しない。
 
 **7. resolver()を記入**
 
