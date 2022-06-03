@@ -5,6 +5,8 @@ DNS_ROPOB
 * [ROPOB: Obfuscating Binary Code
 via Return Oriented Programming](https://mudongliang.github.io/files/papers/ropob_securecomm.pdf)という論文を参考に、TSG LIVE CTF 8のために作ったプログラム。汚いコードなのは許してほしい。(時間があれば綺麗にする。)
 * `input/dns_ropob.c`が問題のソースコード
+* どのような仕組みかは、変換後のバイナリをstep実行すれば自ずとわかる。
+* 論文と同じく、動的解析には無力
 
 # 論文との相違点。
 
