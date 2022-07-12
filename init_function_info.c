@@ -1,28 +1,28 @@
 #include "dns_ropob.h"
 
 void make_global(char* globalname, FILE *outasm_fp) {
-	char asm[1000];
-	sprintf(asm, "\t.globl\t%s\n\t.data\n\t.align\t8\n\t.type\t%s, @object\n\t.size\t%s, 8\n%s:\n\t.quad\t0\n", globalname, globalname, globalname, globalname);
-	fwrite(asm, sizeof(char), strlen(asm), outasm_fp);
+	char buf[1000];
+	sprintf(buf, "\t.globl\t%s\n\t.data\n\t.align\t8\n\t.type\t%s, @object\n\t.size\t%s, 8\n%s:\n\t.quad\t0\n", globalname, globalname, globalname, globalname);
+	fwrite(buf, sizeof(char), strlen(buf), outasm_fp);
 	return;
 }
 
 void make_function_gadget_offsets(int funcnumber, int instruction_count,int func_count, char* funcname, FILE *outasm_fp, FILE *obj_fp) {
 	int gadget_table_size = instruction_count * 8;
 	if (funcnumber == 0) {
-		char asm[100] = "\t.globl\tfuncgadgetoffsets\n\t.align\t8\n\t.type\tfuncgadgetoffsets, @object\n";
-		fwrite(asm, sizeof(char), strlen(asm), outasm_fp);
-		sprintf(asm, "\t.size\tfuncgadgetoffsets, %d\nfuncgadgetoffsets:\n", 8*func_count);
-		fwrite(asm, sizeof(char), strlen(asm), outasm_fp);
+		char buf[100] = "\t.globl\tfuncgadgetoffsets\n\t.align\t8\n\t.type\tfuncgadgetoffsets, @object\n";
+		fwrite(buf, sizeof(char), strlen(buf), outasm_fp);
+		sprintf(buf, "\t.size\tfuncgadgetoffsets, %d\nfuncgadgetoffsets:\n", 8*func_count);
+		fwrite(buf, sizeof(char), strlen(buf), outasm_fp);
 		for(int i = 0; i < func_count; i++) {
 			fwrite("\t.quad\t0\n", sizeof(char), 9, outasm_fp);
 		}
 	}
-	char asm[1000];
-	sprintf(asm, "\t.globl\tfunc%dgadgettable\n\t.align\t8\n\t.type\tfunc%dgadgettable, @object\n", funcnumber, funcnumber);
-	fwrite(asm, sizeof(char), strlen(asm), outasm_fp);
-	sprintf(asm, "\t.size\tfunc%dgadgettable, %d\nfunc%dgadgettable:\n", funcnumber, gadget_table_size, funcnumber);
-	fwrite(asm, sizeof(char), strlen(asm), outasm_fp);
+	char buf[1000];
+	sprintf(buf, "\t.globl\tfunc%dgadgettable\n\t.align\t8\n\t.type\tfunc%dgadgettable, @object\n", funcnumber, funcnumber);
+	fwrite(buf, sizeof(char), strlen(buf), outasm_fp);
+	sprintf(buf, "\t.size\tfunc%dgadgettable, %d\nfunc%dgadgettable:\n", funcnumber, gadget_table_size, funcnumber);
+	fwrite(buf, sizeof(char), strlen(buf), outasm_fp);
 	make_function_gadget_table(funcnumber, instruction_count, funcname, outasm_fp, obj_fp);
 	return;
 }

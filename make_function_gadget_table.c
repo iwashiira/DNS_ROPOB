@@ -22,9 +22,9 @@ void shuffle(int array[], int size) {
 }
 
 void make_func_offs_table(int offsets, FILE *outasm_fp) {
-	char asm[100];
-	sprintf(asm, "\t.quad\t%d\n", offsets);
-	fwrite(asm, sizeof(char), strlen(asm), outasm_fp);
+	char buf[100];
+	sprintf(buf, "\t.quad\t%d\n", offsets);
+	fwrite(buf, sizeof(char), strlen(buf), outasm_fp);
 	return;
 }
 
@@ -124,7 +124,7 @@ void make_function_gadget_table(int funcnumber, int instruction_count, char* fun
 }
 
 void make_function_gadget_table_fix_jmp(FILE * outasm1_fp, FILE *outasm2_fp, FILE *obj2_fp, int funcnumber) {
-	char asm[1001];
+	char buf[1001];
 	rewind(obj2_fp);
 	int infunc = 0;
 	int space = 0;
@@ -143,24 +143,24 @@ void make_function_gadget_table_fix_jmp(FILE * outasm1_fp, FILE *outasm2_fp, FIL
 	int* gadget_count = function_table[funcnumber][3];
 	int instruction_count = *gadget_count;
 
-	while(fgets(asm, 1000, obj2_fp) != NULL) {
+	while(fgets(buf, 1000, obj2_fp) != NULL) {
 		if (infunc == 1) {
 			for (int i = 0; i < 1001 ;i++) {
-				if (asm[i] == ' ') {
+				if (buf[i] == ' ') {
 					continue;
 				}
 				space = i;
 				break;
 			}
-			if (asm[0] != ' ' && asm[1] != ' ') {
+			if (buf[0] != ' ' && buf[1] != ' ') {
 				infunc = 0;
 			}
 			// jmpガジェットの機械語の長さを変更
 			if (check == 1) {
 				if (next == 2) {
-					if (strstr(asm, "<gadgetnumber>") != NULL) {
+					if (strstr(buf, "<gadgetnumber>") != NULL) {
 						for (int i = 0; i < 10; i++) {
-							gadget_num[i+2] = strchr(asm, ',')[i+3];
+							gadget_num[i+2] = strchr(buf, ',')[i+3];
 							if (gadget_num[i+2] == ' ') {
 								gadget_num[i+2] = '\0';
 								break;
@@ -172,14 +172,14 @@ void make_function_gadget_table_fix_jmp(FILE * outasm1_fp, FILE *outasm2_fp, FIL
 					}
 				}
 				if (next == 1) {
-					for (int i = space, j = strchr(asm, ':') - asm; i < j ;i++) {
-						now_offs[i - space + 2] = asm[i];
+					for (int i = space, j = strchr(buf, ':') - buf; i < j ;i++) {
+						now_offs[i - space + 2] = buf[i];
 					}
 					next = 2;
 				}
-				if (strstr(asm, "\tj") != NULL) {
-					for (int i = space, j = strchr(asm, ':') - asm; i < j ;i++) {
-						old_offs[i - space + 2] = asm[i];
+				if (strstr(buf, "\tj") != NULL) {
+					for (int i = space, j = strchr(buf, ':') - buf; i < j ;i++) {
+						old_offs[i - space + 2] = buf[i];
 					}
 					next = 1;
 				}
@@ -187,11 +187,11 @@ void make_function_gadget_table_fix_jmp(FILE * outasm1_fp, FILE *outasm2_fp, FIL
 					check = 0;
 				}
 			}
-			if (strstr(asm, "\tret") != NULL) {
+			if (strstr(buf, "\tret") != NULL) {
 				check = 1;
 			}
 		}
-		if (strstr(asm, funcname_obj) != NULL) {
+		if (strstr(buf, funcname_obj) != NULL) {
 			infunc = 1;
 		}
 	}
@@ -211,7 +211,7 @@ void make_function_gadget_table_fix_jmp(FILE * outasm1_fp, FILE *outasm2_fp, FIL
 	}	
 	for (int i = 0; i < instruction_count; i++) {
 		make_func_offs_table(gadget_offsets[i], outasm2_fp);
-		fgets(asm, 1000, outasm1_fp);
+		fgets(buf, 1000, outasm1_fp);
 	}
 	return;
 }

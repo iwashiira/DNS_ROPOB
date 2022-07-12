@@ -1,9 +1,9 @@
 #include "dns_ropob.h"
 
 void asm_write(char *str, FILE *outasm_fp) {
-	char asm[1001];
-	strncpy(asm, str, 1000);
-	fwrite(asm, sizeof(char), strlen(asm), outasm_fp);
+	char buf[1001];
+	strncpy(buf, str, 1000);
+	fwrite(buf, sizeof(char), strlen(buf), outasm_fp);
 }
 
 void add_resolver(FILE *outasm_fp) {

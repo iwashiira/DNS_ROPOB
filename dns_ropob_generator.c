@@ -65,10 +65,10 @@ int main(int argc, char* argv[]) {
 	if (obj1_fp == NULL) {
 		error("Can't open obj1_file", 9);
 	}
-	char asm[100];
+	char buf[100];
 	for (int i = 0;i < 3; i++) {
-		fgets(asm, sizeof(asm), asm_fp);
-		fwrite(asm, sizeof(char), strlen(asm), outasm1_fp);
+		fgets(buf, sizeof(buf), asm_fp);
+		fwrite(buf, sizeof(char), strlen(buf), outasm1_fp);
 	}
 
 	// make outasm1.s
